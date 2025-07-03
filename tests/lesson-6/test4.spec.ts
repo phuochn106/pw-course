@@ -3,15 +3,16 @@ import { PersonalNotePage } from '../../pages/01-pom';
 
 test('Personal Notes - Add, Search, Verify Results', async ({ page }) => {
     const notePage = new PersonalNotePage(page);
-    // inputTitle = this.page.locator('#title');
-    // inputBody = this.page.locator('#body');
-    // btnAdd = this.page.locator('#add-note');
-    // inputSearch = this.page.locator('#search-note');
-    // listNotes = this.page.locator('.note');
+    notePage.xpathNotePage = "//a[contains(text(),'Personal notes')]";
+    notePage.inputTitle = page.locator('//input[@id="note-title"]');
+    notePage.inputBody = page.locator('//textarea[@id="note-content"]');
+    notePage.btnAdd = page.locator('//button[@id="add-note"]');
+    notePage.inputSearch = page.locator('//input[@id="search"])');
+    notePage.listNotes = page.locator('//ul[@id="notes-list"]');
 
     await test.step('Open Personal Notes page', async () => {
         await notePage.openMaterialPage();
-        await notePage.gotoPage('Bài học 4: Personal notes');
+        await notePage.gotoPage(notePage.xpathNotePage);
     });
 
     await test.step('Add 10 notes from vnexpress.net/khoa-hoc', async () => {
