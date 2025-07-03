@@ -1,63 +1,59 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page, chromium } from '@playwright/test';
+import { UtilPage } from '../../pages/lesson-5-pom';
 
 test.describe('AUTH-Authentication', () => {
-    async function login(page: Page, userName: string, pass: string) {
-        await page.locator("#user_login").fill(userName);
-        await page.locator("#user_pass").fill(pass);
-    }
+    let page: Page;
+    let browser;
+    let inputtedUserName = "";
+    let userName = "p103-phuoc";
+    let wUserName = "p103";
+    let password = "$9ICWlOVhHW2nNZUtkLPq)%e";
+    let utilPage: UtilPage;
+
+    test.beforeEach(async ({ }) => {
+        browser = await chromium.launch();
+        const context = await browser.newContext();
+        page = await context.newPage();
+        utilPage = new UtilPage(page);
+        utilPage.xpathUsername = "#user_login";
+        utilPage.xpathPassword = "#user_pass";
+        utilPage.xpathLoginButton = "#wp-submit";
+        utilPage.xpathErrorLabel = "#login_error>p";
+        utilPage.redirectLink = "https://pw-practice-dev.playwrightvn.com/wp-admin/";
+
+
+        utilPage.openLoginPage();
+    })
 
     test('@AUTH_001-Login fail', async ({ page }) => {
-        let inputtedUserName = "";
-
-        await test.step('Step: Go to login page', async () => {
-            await page.goto('https://pw-practice-dev.playwrightvn.com/wp-admin');
-        })
-
-        await test.step('Step: Input invalid credentials and login', async () => {
-            login(page, "phuoc", "phuoc");
-            inputtedUserName = await page.inputValue("#user_login");
-        })
-
-        await test.step('Step: Click button Login', async () => {
-            await page.locator("#wp-submit").click();
+        await test.step('Step: Login with wrong user name ', async () => {
+            await utilPage.doLogin(wUserName, password);
         })
 
         await test.step('Step: Verify error message', async () => {
-            let displayText = (await page.locator("#login_error>p").allInnerTexts())[0];
-            let expectedText = `Error: The username ${inputtedUserName} is not registered on this site. If you are unsure of your username, try your email address instead.`;
-            expect(displayText).toBe(expectedText);
+            const isFailed = await utilPage.checkLoginNotSuccess(wUserName);
+            expect(isFailed).toBeTruthy();
         })
     })
 
     test('@AUTH_002-Login success', async ({ page }) => {
-        await test.step('Step: Go to login page', async () => {
-            await page.goto('https://pw-practice-dev.playwrightvn.com/wp-admin');
+        await test.step('Step: Login with correct UN, PWD', async () => {
+            await utilPage.doLogin(userName, password);
         })
 
-        await test.step('Step: Input valid credentials and login', async () => {
-            login(page, "p103-phuoc", "$9ICWlOVhHW2nNZUtkLPq)%e");
+        await test.step('Step: check to correct redirect URL', async () => {
+            const isTrue = await utilPage.isCorrectRedirected(utilPage.redirectLink);
+            expect(isTrue).toBeTruthy();
         })
 
-        await test.step('Step: Click button Login', async () => {
-            await page.locator("#wp-submit").click();
-        })
-
-        await test.step('Step: check redirect URL', async () => {
-            await expect(page).toHaveURL('https://pw-practice-dev.playwrightvn.com/wp-admin/', { timeout: 5000 });
-        })
-
-        await test.step('Step: Check element H1 is displayed', async () => {
-            const innerTextH1 = await page.locator('.wrap>h1').innerText();
-            const expectedH1Text = "Dashboard";
-            expect(innerTextH1).toBe(expectedH1Text);
-        })
-
-        await test.step('Step: Check elements H2 is displayed and their text ', async () => {
-            const h2Locators = page.locator('.postbox-header>h2');
-            const textFirst = await h2Locators.nth(0).innerText();
-            const textSecond = await h2Locators.nth(1).innerText();
-            expect(textFirst).toBe('At a Glance');
-            expect(textSecond).toBe('Activity');
-        })
+        await test.step('Step: Check text Dashboard, At a Grance,Activity are displayed', async () => {
+            utilPage.xpathDashBoard = '.wrap>h1';
+            utilPage.xpathGlance = '(//div[@class="postbox-header"])[1]/h2';
+            utilPage.xpathActivity = '(//div[@class="postbox-header"])[2]/h2';
+            const iStxtDashBoard = await utilPage.checkExpectedTextDisplay(utilPage.xpathDashBoard, 'Dash Board');
+            const iStxtGlance = await utilPage.checkExpectedTextDisplay(utilPage.xpathGlance, 'At a Glance');
+            const iStxtActivity = await utilPage.checkExpectedTextDisplay(utilPage.xpathActivity, 'Activity');
+            expect(iStxtDashBoard && iStxtGlance && iStxtActivity).toBeTruthy();
+        });
     })
 })

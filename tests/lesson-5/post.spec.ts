@@ -1,16 +1,42 @@
 import { test, expect, Page, chromium } from '@playwright/test';
+import { PostPage, UtilPage } from '../../pages/lesson-5-pom';
 
 let page: Page;
 let browser;
 test.describe('POST-post', () => {
+    let page: Page;
+    let browser;
+    const userName = "p103-phuoc";
+    const wUserName = "p103";
+    const password = "$9ICWlOVhHW2nNZUtkLPq)%e";
+    let postPage: PostPage;
+    const expectedErrorText1 = "A name is required for this term."
+    const expectedErrorText2 = "A term with the name provided already exists in this taxonomy.";
+    const existingTag = "lesson tag";
+    const tagUserName = "Phuoc";
+    const msgAdded = "Tag added.";
+    const specialSlug = "Đây là tag đặc biệt @1221 $2112";
+    const expectedSlug = "day-la-category-dac-biet-1221-2112";
+
+
     test.beforeEach(async ({ }) => {
         browser = await chromium.launch();
         const context = await browser.newContext();
         page = await context.newPage();
-        await page.goto("https://pw-practice-dev.playwrightvn.com/wp-admin");
-        await page.locator("#user_login").fill("p103-phuoc");
-        await page.locator("#user_pass").fill("$9ICWlOVhHW2nNZUtkLPq)%e");
-        await page.locator("#wp-submit").click();
+        postPage = new PostPage(page);
+        postPage.xpathUsername = "#user_login";
+        postPage.xpathPassword = "#user_pass";
+        postPage.xpathLoginButton = "#wp-submit";
+        postPage.xpathAddTag = "#wp-submit";
+        postPage.xpathErrorMessage = '//div[@role="alert"]/p';
+        postPage.xpathTagName = "#tag-name";
+        postPage.xpathSlug = "#tag-slug";
+        postPage.xpathRowTitle = "a.row-title";
+        postPage.xpathCheckColumn = 'th.check-column input[type="checkbox"]';
+        postPage.xpathBulkAction = '//select[@id ="bulk-action-selector-top"]';
+        postPage.xpathBtnDelete = '//select[@id ="bulk-action-selector-top"]';
+        postPage.xpathDoAction = '#doaction';
+        postPage.xpathSlugCol = 'td[data-colname="Slug"]';
     })
 
     test.afterEach(async () => {
@@ -19,113 +45,64 @@ test.describe('POST-post', () => {
 
     test('@POST_TAG_001-Tag - add tag failed', async () => {
         await test.step('Step: Check validation when click add tag w/o input data', async () => {
-            await page.locator("//div[contains(text(), 'Posts')]").click();
-            await page.locator("//a[contains(text(), 'Tags')]").click();
-            await page.locator("#submit").click();
-
-            //Check error message
-            const expectedText = "A name is required for this term.";
-            const atualText = await page.locator('//div[@role="alert"]/p').innerText();
-            expect(atualText).toBe(expectedText);
+            await postPage.addTag("", "", "Posts", "Tags");
+            const isTrue = postPage.checkExpectedTextDisplay(postPage.xpathErrorMessage, expectedErrorText1);
+            expect(isTrue).toBeTruthy();
         })
 
-        await test.step('Step: Input tag name and add tag', async () => {
-            await page.locator("#tag-name").fill("lesson tag");
-            await page.locator("#submit").click();
-
-            //Check error message
-            const expectedText1 = "A term with the name provided already exists in this taxonomy.";
-            const locatorP = page.locator('//div[@role="alert"]/p');
-            await expect(locatorP).toHaveText(expectedText1)
+        await test.step('Step: Input tag with existing name', async () => {
+            await postPage.addTag(existingTag, "", "Posts", "Tags");
+            const isTrue = postPage.checkExpectedTextDisplay(postPage.xpathErrorMessage, expectedErrorText2);
+            expect(isTrue).toBeTruthy();
         })
     })
 
     test('@POST_TAG_002 - Tag - add tag success', async () => {
-        await test.step('Step: Input data tag name = $name', async () => {
-            //Go to 'Tags' menu
-            await page.locator("//div[contains(text(), 'Posts')]").click();
-            await page.locator("//a[contains(text(), 'Tags')]").click();
-
-            //Add new tag = $name
-            await page.locator("#tag-name").fill("tag Phuoc");
-            await page.locator("#submit").click();
-        })
-
-        await test.step('Step: Check message tag added', async () => {
-            const expectedText2 = "Tag added.";
-            const locatorP = page.locator('//div[@role="alert"]/p');
-            await expect(locatorP).toHaveText(expectedText2);
+        await test.step('Step: Input tag name and check success', async () => {
+            await postPage.addTag(`tag ${tagUserName}`, "", "Posts", "Tags");
+            const isTrue = postPage.checkExpectedTextDisplay(postPage.xpathErrorMessage, msgAdded)
+            expect(isTrue).toBeTruthy();
         })
 
         await test.step('Step: Fill tag name + slug', async () => {
-            //Add new tag = tag-$name-02, slug: tag-${name}-02"
-            await page.locator("#tag-name").fill("tag Phuoc 02");
-            await page.locator("#tag-slug").fill("tag-Phuoc-02");
-            await page.locator("#submit").click();
-        })
-
-        await test.step('Step: Check message tag/slug added', async () => {
-            const expectedText3 = "Tag added.";
-            const locatorP = page.locator('//div[@role="alert"]/p');
-            await expect(locatorP).toHaveText(expectedText3);
+            await test.step('Step: Input tag name and check success', async () => {
+                await postPage.addTag(`tag ${tagUserName} 02`, `slug ${tagUserName} 02`, "Posts", "Tags");
+                const isTrue = postPage.checkExpectedTextDisplay(postPage.xpathErrorMessage, msgAdded)
+                expect(isTrue).toBeTruthy();
+            })
         })
 
         await test.step('Step: Delete tag', async () => {
-            const row = page.locator('tr', {
-                has: page.locator('a.row-title', { hasText: 'tag Phuoc 02' })
-            });
-            await row.locator('th.check-column input[type="checkbox"]').check();
-            await page.locator('//select[@id ="bulk-action-selector-top"]').click();
-            await page.locator('//select[@id ="bulk-action-selector-top"]').selectOption('delete');
-            await page.locator('#doaction').click();
+            await postPage.deleteTag(tagUserName);
+            const rowVisible = await postPage.checkTagNameAndSlug(`tag ${tagUserName} 02`);
+            expect(!rowVisible).toBeTruthy();
         })
     })
 
     test('@POST_TAG_003 - Tag - add tag with special character', async () => {
         await test.step('Step: Input data tag name = $name', async () => {
-            //Go to 'Tags' menu
-            await page.locator("//div[contains(text(), 'Posts')]").click();
-            await page.locator("//a[contains(text(), 'Tags')]").click();
-
-            //Add new tag = $name
-            await page.locator("#tag-name").fill("tag Phuoc 03");
-            await page.locator("#submit").click();
-        })
-
-        await test.step('Step: Check message tag added', async () => {
-            const expectedText2 = "Tag added.";
-            const locatorP = page.locator('//div[@role="alert"]/p');
-            await expect(locatorP).toHaveText(expectedText2);
+            postPage.addTag(`tag ${tagUserName} 03`, "", "Posts", "Tags");
+            //check add success
+            const isTrue = postPage.checkExpectedTextDisplay(postPage.xpathErrorMessage, msgAdded)
+            expect(isTrue).toBeFalsy();
         })
 
         await test.step('Step: Fill tag name + slug', async () => {
-            //Add new tag = tag-$name-02, slug: tag-${name}-03"
-            await page.locator("#tag-name").fill("tag Phuoc 03");
-            await page.locator("#tag-slug").fill("Đây là tag đặc biệt @1221 $2112");
-            await page.locator("#submit").click();
+            postPage.addTag(`tag ${tagUserName} 03`, specialSlug, "Posts", "Tags");
+            //Check add success
+            const isTrue = postPage.checkExpectedTextDisplay(postPage.xpathErrorMessage, msgAdded)
+            expect(isTrue).toBeTruthy();
         })
 
-        await test.step('Step: Check message added', async () => {
-            const expectedText3 = "Tag added.";
-            const locatorP = page.locator('//div[@role="alert"]/p');
-            await expect(locatorP).toHaveText(expectedText3);
-        })
-
-        await test.step('Step: Check slug is added and display ', async () => {
-            const expectedText3 = "day-la-tag-dac-biet-1221-2112";
-            const row = page.locator('tr', {
-                has: page.locator('td[data-colname="Slug"]', { hasText: 'day-la-tag-dac-biet-1221-2112' })
-            });
+        await test.step('Step: Check special slug is added and display ', async () => {
+            const row = postPage.checkTagNameAndSlug(expectedSlug);
+            expect(row).toBeTruthy();
         })
 
         await test.step('Step: Delete tag', async () => {
-            const row = page.locator('tr', {
-                has: page.locator('a.row-title', { hasText: 'tag Phuoc 03' })
-            });
-            await row.locator('th.check-column input[type="checkbox"]').check();
-            await page.locator('//select[@id ="bulk-action-selector-top"]').click();
-            await page.locator('//select[@id ="bulk-action-selector-top"]').selectOption('delete');
-            await page.locator('#doaction').click();
+            await postPage.deleteTag(`tag ${tagUserName} 03`);
+            const rowVisible = await postPage.checkTagNameAndSlug(expectedSlug)
+            expect(!rowVisible).toBeTruthy();
         })
     })
 
@@ -145,12 +122,6 @@ test.describe('POST-post', () => {
             const expectedText = "Category added.";
             const locatorP = page.locator('//div[@role="alert"]/p');
             await expect(locatorP).toHaveText(expectedText);
-        })
-
-        await test.step('Step: Check slug is added and display ', async () => {
-            const row = page.locator('tr', {
-                has: page.locator('td[data-colname="Slug"]', { hasText: 'day-la-category-dac-biet-1221-2112' })
-            });
         })
 
         await test.step('Step: Check slug is added and display ', async () => {
