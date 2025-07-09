@@ -1,13 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { ProductPage } from '../../pages/01-pom';
+import { ProductPage } from '../../pages/product-page';
 
 test('Add product - Check qty and Total price', async ({ page }) => {
     const productPage = new ProductPage(page);
-    productPage.xpathProductPage = "//a[contains(text(), 'Product page')]";
 
     await test.step('Step: Open material page and goto product page', async () => {
         await productPage.openMaterialPage();
-        await productPage.gotoPage(productPage.xpathProductPage);
+        await productPage.gotoPage('Product page');
     })
 
     await test.step('Step: Add product to cart', async () => {
@@ -24,7 +23,7 @@ test('Add product - Check qty and Total price', async ({ page }) => {
     })
 
     await test.step('Step: Check Total', async () => {
-        const isTotalCorrect = await productPage.checkToTalPrice();
+        const isTotalCorrect = await productPage.checkToTalPrice(3);
         expect(isTotalCorrect).toBeTruthy();
     })
 })

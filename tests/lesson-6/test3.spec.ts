@@ -1,13 +1,14 @@
 import { test, expect } from '@playwright/test';
-import { TodoPage } from '../../pages/01-pom';
+import { TodoPage } from '../../pages/todo-page';
 
 test('Todo test - add, remove, verify visibility', async ({ page }) => {
     const todoPage = new TodoPage(page);
-    todoPage.xpathTodoPage = "//a[contains(text(),'Todo page')]";
+    todoPage.xpathInputTask = '//input[@id="new-task"]';
+    todoPage.xpathAddTaskButton = '//button[@id="add-task"]';
 
     await test.step('Step: open material page and go to Todo page', async () => {
         await todoPage.openMaterialPage();
-        await todoPage.gotoPage(todoPage.xpathTodoPage);
+        await todoPage.gotoPage('Todo page');
     });
 
     await test.step('Step:Add 100 todo items', async () => {
@@ -17,7 +18,7 @@ test('Todo test - add, remove, verify visibility', async ({ page }) => {
     });
 
     await test.step('Delete odd-numbered todos', async () => {
-        await todoPage.deleteTodo();
+        await todoPage.deleteTodoItem(10);
     });
 
     await test.step('Verify Todo 90 is visible in viewport', async () => {

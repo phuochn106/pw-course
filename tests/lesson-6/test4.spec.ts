@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { PersonalNotePage } from '../../pages/01-pom';
+import { } from '../../pages/01-pom';
+import { PersonalNotePage } from '../../pages/personal-note';
 
 test('Personal Notes - Add, Search, Verify Results', async ({ page }) => {
     const notePage = new PersonalNotePage(page);

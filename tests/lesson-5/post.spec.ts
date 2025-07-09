@@ -1,15 +1,15 @@
 import { test, expect, Page, chromium } from '@playwright/test';
-import { PostPage, UtilPage } from '../../pages/lesson-5-pom';
+import { PostPage } from '../../pages/lesson-05-pom/post-page';
 
 let page: Page;
 let browser;
 test.describe('POST-post', () => {
     let page: Page;
     let browser;
+    let postPage: PostPage;
     const userName = "p103-phuoc";
     const wUserName = "p103";
     const password = "$9ICWlOVhHW2nNZUtkLPq)%e";
-    let postPage: PostPage;
     const expectedErrorText1 = "A name is required for this term."
     const expectedErrorText2 = "A term with the name provided already exists in this taxonomy.";
     const existingTag = "lesson tag";
@@ -17,26 +17,25 @@ test.describe('POST-post', () => {
     const msgAdded = "Tag added.";
     const specialSlug = "Đây là tag đặc biệt @1221 $2112";
     const expectedSlug = "day-la-category-dac-biet-1221-2112";
-
+    const xpathUsername = "#user_login";
+    const xpathPassword = "#user_pass";
+    const xpathLoginButton = "#wp-submit";
+    const xpathAddTag = "#wp-submit";
+    const xpathErrorMessage = '//div[@role="alert"]/p';
+    const xpathTagName = "#tag-name";
+    const xpathSlug = "#tag-slug";
+    const xpathRowTitle = "a.row-title";
+    const xpathCheckColumn = 'th.check-column input[type="checkbox"]';
+    const xpathBulkAction = '//select[@id ="bulk-action-selector-top"]';
+    const xpathBtnDelete = '//select[@id ="bulk-action-selector-top"]';
+    const xpathDoAction = '#doaction';
+    const xpathSlugCol = 'td[data-colname="Slug"]';
 
     test.beforeEach(async ({ }) => {
         browser = await chromium.launch();
         const context = await browser.newContext();
         page = await context.newPage();
         postPage = new PostPage(page);
-        postPage.xpathUsername = "#user_login";
-        postPage.xpathPassword = "#user_pass";
-        postPage.xpathLoginButton = "#wp-submit";
-        postPage.xpathAddTag = "#wp-submit";
-        postPage.xpathErrorMessage = '//div[@role="alert"]/p';
-        postPage.xpathTagName = "#tag-name";
-        postPage.xpathSlug = "#tag-slug";
-        postPage.xpathRowTitle = "a.row-title";
-        postPage.xpathCheckColumn = 'th.check-column input[type="checkbox"]';
-        postPage.xpathBulkAction = '//select[@id ="bulk-action-selector-top"]';
-        postPage.xpathBtnDelete = '//select[@id ="bulk-action-selector-top"]';
-        postPage.xpathDoAction = '#doaction';
-        postPage.xpathSlugCol = 'td[data-colname="Slug"]';
     })
 
     test.afterEach(async () => {
@@ -44,15 +43,15 @@ test.describe('POST-post', () => {
     });
 
     test('@POST_TAG_001-Tag - add tag failed', async () => {
-        await test.step('Step: Check validation when click add tag w/o input data', async () => {
+        await test.step('Step: Check validation ', async () => {
             await postPage.addTag("", "", "Posts", "Tags");
-            const isTrue = postPage.checkExpectedTextDisplay(postPage.xpathErrorMessage, expectedErrorText1);
+            const isTrue = postPage.checkExpectedTextDisplay(xpathErrorMessage, expectedErrorText1);
             expect(isTrue).toBeTruthy();
         })
 
         await test.step('Step: Input tag with existing name', async () => {
             await postPage.addTag(existingTag, "", "Posts", "Tags");
-            const isTrue = postPage.checkExpectedTextDisplay(postPage.xpathErrorMessage, expectedErrorText2);
+            const isTrue = postPage.checkExpectedTextDisplay(xpathErrorMessage, expectedErrorText2);
             expect(isTrue).toBeTruthy();
         })
     })
@@ -60,14 +59,14 @@ test.describe('POST-post', () => {
     test('@POST_TAG_002 - Tag - add tag success', async () => {
         await test.step('Step: Input tag name and check success', async () => {
             await postPage.addTag(`tag ${tagUserName}`, "", "Posts", "Tags");
-            const isTrue = postPage.checkExpectedTextDisplay(postPage.xpathErrorMessage, msgAdded)
+            const isTrue = postPage.checkExpectedTextDisplay(xpathErrorMessage, msgAdded)
             expect(isTrue).toBeTruthy();
         })
 
         await test.step('Step: Fill tag name + slug', async () => {
             await test.step('Step: Input tag name and check success', async () => {
                 await postPage.addTag(`tag ${tagUserName} 02`, `slug ${tagUserName} 02`, "Posts", "Tags");
-                const isTrue = postPage.checkExpectedTextDisplay(postPage.xpathErrorMessage, msgAdded)
+                const isTrue = postPage.checkExpectedTextDisplay(xpathErrorMessage, msgAdded)
                 expect(isTrue).toBeTruthy();
             })
         })
@@ -82,15 +81,13 @@ test.describe('POST-post', () => {
     test('@POST_TAG_003 - Tag - add tag with special character', async () => {
         await test.step('Step: Input data tag name = $name', async () => {
             postPage.addTag(`tag ${tagUserName} 03`, "", "Posts", "Tags");
-            //check add success
-            const isTrue = postPage.checkExpectedTextDisplay(postPage.xpathErrorMessage, msgAdded)
+            const isTrue = postPage.checkExpectedTextDisplay(xpathErrorMessage, msgAdded)
             expect(isTrue).toBeFalsy();
         })
 
         await test.step('Step: Fill tag name + slug', async () => {
             postPage.addTag(`tag ${tagUserName} 03`, specialSlug, "Posts", "Tags");
-            //Check add success
-            const isTrue = postPage.checkExpectedTextDisplay(postPage.xpathErrorMessage, msgAdded)
+            const isTrue = postPage.checkExpectedTextDisplay(xpathErrorMessage, msgAdded)
             expect(isTrue).toBeTruthy();
         })
 
