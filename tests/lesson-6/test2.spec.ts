@@ -1,8 +1,10 @@
 import { expect, test } from '@playwright/test';
 import { ProductPage } from '../../pages/product-page';
+import { POMmanager } from '../tests/students-submission/phuoc/pom-manager-lesson6';
 
 test('Add product - Check qty and Total price', async ({ page }) => {
-    const productPage = new ProductPage(page);
+    const pomManager = new POMmanager(page);
+    const productPage = pomManager.getProductPage();
 
     await test.step('Step: Open material page and goto product page', async () => {
         await productPage.openMaterialPage();

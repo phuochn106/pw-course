@@ -1,46 +1,6 @@
-import { Locator, Page, expect } from "@playwright/test";
+import { MaterialBasePage } from "./01-pom";
 
-export class BasePage {
-    /*
-    const userName = "phuoc2";
-    const email = "phuoc2@yopmail.com";
-    const registerPage = new RegisterPage(page)
-    registerPage.xpathUsername = "//input[@name='username']";
-    registerPage.xpathEmail = "//input[@name='email']";
-    registerPage.xpathGenderMale = "//input[@value='male']";
-    registerPage.xpathGenderFemale = "//input[@value='female']";
-    registerPage.xpathRegisterButton = "//button[contains(text(),'Register')]";
-    registerPage.xpathRegisterPage = "//a[contains(text(), 'Register Page')]";
-
-    */
-    page: Page;
-    xpathLoginPage: string;
-    xpathPostPage: string;
-    xpathMedia: string;
-    cssTodoPage: string;
-
-    constructor(page: Page) {
-        this.page = page;
-    }
-
-    async openLoginPage() {
-        await this.page.goto("https://pw-practice-dev.playwrightvn.com/wp-admin");
-    }
-
-    async goToPage(menuName: string, subMenu: string) {
-    }
-
-    async generateXpath() {
-
-
-    }
-}
-
-export class UtilPage extends BasePage {
-
-}
-
-export class PostPage extends UtilPage {
+export class PostPage extends MaterialBasePage {
     xpathAddTag: string;
     xpathTagName: string;
     xpathSlug: string;
@@ -53,8 +13,8 @@ export class PostPage extends UtilPage {
     xpathSlugCol: string;
 
     async addTag(tagName: string, slug: string, mainTab: string, subTab: string): Promise<void> {
-        // await this.goToPage(mainTab);
-        // await this.goToPage(subTab);
+        await this.gotoPage(mainTab);
+        await this.gotoPage(subTab);
         await this.page.locator(this.xpathTagName).fill(tagName);
         await this.page.locator(this.xpathSlug).fill(slug);
         await this.page.locator(this.xpathAddTag).click();

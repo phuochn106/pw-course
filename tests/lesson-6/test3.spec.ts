@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { TodoPage } from '../../pages/todo-page';
+import { POMmanager } from '../tests/students-submission/phuoc/pom-manager-lesson6';
 
 test('Todo test - add, remove, verify visibility', async ({ page }) => {
-    const todoPage = new TodoPage(page);
+    const pomManager = new POMmanager(page);
+    const todoPage = pomManager.getTodoPage();
     todoPage.xpathInputTask = '//input[@id="new-task"]';
     todoPage.xpathAddTaskButton = '//button[@id="add-task"]';
 

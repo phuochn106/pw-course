@@ -1,9 +1,11 @@
 import { test, expect } from '@playwright/test';
 import { } from '../../pages/01-pom';
 import { PersonalNotePage } from '../../pages/personal-note';
+import { POMmanager } from '../tests/students-submission/phuoc/pom-manager-lesson6';
 
 test('Personal Notes - Add, Search, Verify Results', async ({ page }) => {
-    const notePage = new PersonalNotePage(page);
+    const pomManager = new POMmanager(page);
+    const notePage = pomManager.getPersonalNote();
     notePage.xpathNotePage = "//a[contains(text(),'Personal notes')]";
     notePage.inputTitle = page.locator('//input[@id="note-title"]');
     notePage.inputBody = page.locator('//textarea[@id="note-content"]');

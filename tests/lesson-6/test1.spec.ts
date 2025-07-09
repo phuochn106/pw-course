@@ -1,16 +1,17 @@
 import { test, expect } from '@playwright/test';
 import { RegisterPage } from '../../pages/register-page';
+import { POMmanager } from '../tests/students-submission/phuoc/pom-manager-lesson6';
 
 test('Register successfully and check table data', async ({ page }) => {
     const userName = "phuoc2";
     const email = "phuoc2@yopmail.com";
-    const registerPage = new RegisterPage(page)
+    const pomManager = new POMmanager(page);
+    const registerPage = pomManager.getRegisterPage();
     registerPage.xpathUsername = "//input[@name='username']";
     registerPage.xpathEmail = "//input[@name='email']";
     registerPage.xpathGenderMale = "//input[@value='male']";
     registerPage.xpathGenderFemale = "//input[@value='female']";
     registerPage.xpathRegisterButton = "//button[contains(text(),'Register')]";
-
 
     await test.step('Open material page and go to register page', async () => {
         await registerPage.openMaterialPage();

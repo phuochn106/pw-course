@@ -1,5 +1,7 @@
 import { test, expect, Page, chromium } from '@playwright/test';
-import { PostPage } from '../../pages/lesson-05-pom/post-page';
+import { PostPage } from '../tests/students-submission/phuoc/lesson-08:/post-page';
+import { RegisterPage } from '../../pages/register-page';
+import { Category } from '../tests/students-submission/phuoc/lesson-08:/category-page';
 
 let page: Page;
 let browser;
@@ -7,9 +9,6 @@ test.describe('POST-post', () => {
     let page: Page;
     let browser;
     let postPage: PostPage;
-    const userName = "p103-phuoc";
-    const wUserName = "p103";
-    const password = "$9ICWlOVhHW2nNZUtkLPq)%e";
     const expectedErrorText1 = "A name is required for this term."
     const expectedErrorText2 = "A term with the name provided already exists in this taxonomy.";
     const existingTag = "lesson tag";
@@ -17,19 +16,16 @@ test.describe('POST-post', () => {
     const msgAdded = "Tag added.";
     const specialSlug = "Đây là tag đặc biệt @1221 $2112";
     const expectedSlug = "day-la-category-dac-biet-1221-2112";
-    const xpathUsername = "#user_login";
-    const xpathPassword = "#user_pass";
-    const xpathLoginButton = "#wp-submit";
-    const xpathAddTag = "#wp-submit";
     const xpathErrorMessage = '//div[@role="alert"]/p';
+    const xpathAddTag = "#wp-submit";
+    const xpathPostForm = '.postform';
     const xpathTagName = "#tag-name";
     const xpathSlug = "#tag-slug";
     const xpathRowTitle = "a.row-title";
     const xpathCheckColumn = 'th.check-column input[type="checkbox"]';
     const xpathBulkAction = '//select[@id ="bulk-action-selector-top"]';
-    const xpathBtnDelete = '//select[@id ="bulk-action-selector-top"]';
     const xpathDoAction = '#doaction';
-    const xpathSlugCol = 'td[data-colname="Slug"]';
+    const xpathCatePage = "//a[contains(text(), 'Categories')]";
 
     test.beforeEach(async ({ }) => {
         browser = await chromium.launch();
@@ -104,49 +100,52 @@ test.describe('POST-post', () => {
     })
 
     test('@POST_CATEGORY_001-Category - create category success', async () => {
+        const category = new Category(page);
         await test.step('Step: Add category success', async () => {
+
             //Go to 'Category' menu
-            await page.locator("//div[contains(text(), 'Posts')]").click();
-            await page.locator("//a[contains(text(), 'Categories')]").click();
+            await category.gotoPage('Posts');
+
+            await page.locator(xpathCatePage).click();
 
             //Add new tag = $name
-            await page.locator("#tag-name").fill("category Phuoc 03");
-            await page.locator("#tag-slug").fill("Đây là category đặc biệt @1221 $2112");
-            await page.locator("#submit").click();
+            await page.locator(xpathTagName).fill("category Phuoc 03");
+            await page.locator(xpathSlug).fill("Đây là category đặc biệt @1221 $2112");
+            await page.locator(xpathAddTag).click();
         })
 
         await test.step('Step: Check message category added', async () => {
             const expectedText = "Category added.";
-            const locatorP = page.locator('//div[@role="alert"]/p');
+            const locatorP = page.locator(xpathErrorMessage);
             await expect(locatorP).toHaveText(expectedText);
         })
 
         await test.step('Step: Check slug is added and display ', async () => {
-            await page.locator("#tag-name").fill("category Phuoc 04");
-            await page.locator(".postform").selectOption('k11 class');
-            await page.locator("#submit").click();
+            await page.locator(xpathTagName).fill("category Phuoc 04");
+            await page.locator(xpathPostForm).selectOption('k11 class');
+            await page.locator(xpathAddTag).click();
         })
 
         await test.step('Step: Check message category added', async () => {
             const expectedText = "Category added.";
-            const locatorP = page.locator('//div[@role="alert"]/p');
+            const locatorP = page.locator(xpathErrorMessage);
             await expect(locatorP).toHaveText(expectedText);
         })
 
         await test.step('Step: Check new catetory is added and display ', async () => {
             const row = page.locator('tr', {
-                has: page.locator('a.row-title', { hasText: 'category Phuoc 04' })
+                has: page.locator(xpathRowTitle, { hasText: 'category Phuoc 04' })
             });
         })
 
         await test.step('Step: Delete category', async () => {
             const row = page.locator('tr', {
-                has: page.locator('a.row-title', { hasText: 'category Phuoc 04' })
+                has: page.locator(xpathRowTitle, { hasText: 'category Phuoc 04' })
             });
-            await row.locator('th.check-column input[type="checkbox"]').check();
-            await page.locator('//select[@id ="bulk-action-selector-top"]').click();
-            await page.locator('//select[@id ="bulk-action-selector-top"]').selectOption('delete');
-            await page.locator('#doaction').click();
+            await row.locator(xpathCheckColumn).check();
+            await page.locator(xpathBulkAction).click();
+            await page.locator(xpathBulkAction).selectOption('delete');
+            await page.locator(xpathDoAction).click();
         })
     })
 })
