@@ -1,41 +1,37 @@
 import { test, expect, Page, chromium } from '@playwright/test';
-import { PostPage } from '../../pages/lesson-05-pom/post-page';
+import { PostPage } from '../../pages/lesson-05/post';
+import { LoginPage } from '../../pages/lesson-05/login';
+
 
 let page: Page;
 let browser;
 test.describe('POST-post', () => {
     let page: Page;
     let browser;
-    let postPage: PostPage;
     const userName = "p103-phuoc";
-    const wUserName = "p103";
     const password = "$9ICWlOVhHW2nNZUtkLPq)%e";
-    const expectedErrorText1 = "A name is required for this term."
-    const expectedErrorText2 = "A term with the name provided already exists in this taxonomy.";
+    const expectRequireText = "A name is required for this term."
+    const expectDuplicateText = "A term with the name provided already exists in this taxonomy.";
     const existingTag = "lesson tag";
-    const tagUserName = "Phuoc";
-    const msgAdded = "Tag added.";
-    const specialSlug = "Đây là tag đặc biệt @1221 $2112";
-    const expectedSlug = "day-la-category-dac-biet-1221-2112";
-    const xpathUsername = "#user_login";
-    const xpathPassword = "#user_pass";
-    const xpathLoginButton = "#wp-submit";
-    const xpathAddTag = "#wp-submit";
-    const xpathErrorMessage = '//div[@role="alert"]/p';
-    const xpathTagName = "#tag-name";
-    const xpathSlug = "#tag-slug";
-    const xpathRowTitle = "a.row-title";
-    const xpathCheckColumn = 'th.check-column input[type="checkbox"]';
-    const xpathBulkAction = '//select[@id ="bulk-action-selector-top"]';
-    const xpathBtnDelete = '//select[@id ="bulk-action-selector-top"]';
-    const xpathDoAction = '#doaction';
-    const xpathSlugCol = 'td[data-colname="Slug"]';
+    const tagUserName = "Phuoc2025";
+    const tagSlug = "2025";
+    const msgTagAdded = "Tag added.";
+    const msgCateAdded = "Category added.";
+    const specialTagSlug = "Đây là tag đặc biệt @1221 $2112";
+    const specialCateSlug = "Đây là category đặc biệt @1221 $2112";
+    const expectedTagSlug = "day-la-tag-dac-biet-1221-2112";
+    const expectedCateSlug = "day-la-category-dac-biet-1221-2112";
+    let postPage: PostPage;
+    let loginPage: LoginPage;
+
 
     test.beforeEach(async ({ }) => {
         browser = await chromium.launch();
         const context = await browser.newContext();
         page = await context.newPage();
+        loginPage = new LoginPage(page);
         postPage = new PostPage(page);
+        loginPage.doLoginToAdminPage(userName, password);
     })
 
     test.afterEach(async () => {
@@ -44,109 +40,113 @@ test.describe('POST-post', () => {
 
     test('@POST_TAG_001-Tag - add tag failed', async () => {
         await test.step('Step: Check validation ', async () => {
-            await postPage.addTag("", "", "Posts", "Tags");
-            const isTrue = postPage.checkExpectedTextDisplay(xpathErrorMessage, expectedErrorText1);
-            expect(isTrue).toBeTruthy();
+            //go to post > tags
+            await postPage.goToPage('Tags');
+            await postPage.addNewTag('', '', '');
+            const isAddFail = await postPage.checkShowExpectedMessage(expectRequireText);
+            expect(isAddFail).toBeTruthy();
         })
 
         await test.step('Step: Input tag with existing name', async () => {
-            await postPage.addTag(existingTag, "", "Posts", "Tags");
-            const isTrue = postPage.checkExpectedTextDisplay(xpathErrorMessage, expectedErrorText2);
-            expect(isTrue).toBeTruthy();
+            await postPage.addNewTag(existingTag, '', '');
+            const isAddFail = await postPage.checkShowExpectedMessage(expectDuplicateText);
+            expect(isAddFail).toBeTruthy();
         })
     })
 
     test('@POST_TAG_002 - Tag - add tag success', async () => {
         await test.step('Step: Input tag name and check success', async () => {
-            await postPage.addTag(`tag ${tagUserName}`, "", "Posts", "Tags");
-            const isTrue = postPage.checkExpectedTextDisplay(xpathErrorMessage, msgAdded)
-            expect(isTrue).toBeTruthy();
+            //go to post > tags
+            await postPage.goToPage('Tags');
+            await postPage.addNewTag(existingTag, '', '');
+            const isAddFail = await postPage.checkShowExpectedMessage(expectRequireText);
+            expect(isAddFail).toBeTruthy();
         })
 
         await test.step('Step: Fill tag name + slug', async () => {
-            await test.step('Step: Input tag name and check success', async () => {
-                await postPage.addTag(`tag ${tagUserName} 02`, `slug ${tagUserName} 02`, "Posts", "Tags");
-                const isTrue = postPage.checkExpectedTextDisplay(xpathErrorMessage, msgAdded)
-                expect(isTrue).toBeTruthy();
-            })
+            //add tag
+            await postPage.addNewTag(tagUserName, tagSlug, '');
+            const isAddPass = await postPage.checkShowExpectedMessage(msgTagAdded);
+
+            //check add success
+            expect(isAddPass).toBeTruthy();
+
+            //check nam and slug display in table
+            const addedTagRow = await postPage.checkTagNameAndSlug(tagUserName, tagSlug);
+            expect(addedTagRow.count()).toBeGreaterThan(0);
         })
 
         await test.step('Step: Delete tag', async () => {
-            await postPage.deleteTag(tagUserName);
-            const rowVisible = await postPage.checkTagNameAndSlug(`tag ${tagUserName} 02`);
-            expect(!rowVisible).toBeTruthy();
+            //del tag
+            await postPage.deleteAddedTag(tagUserName, tagSlug);
+
+            //check name and slug not display in table
+            const addedTagRow = await postPage.checkTagNameAndSlug(tagUserName, tagSlug);
+            expect(addedTagRow.count()).toEqual(0);
         })
     })
 
     test('@POST_TAG_003 - Tag - add tag with special character', async () => {
         await test.step('Step: Input data tag name = $name', async () => {
-            postPage.addTag(`tag ${tagUserName} 03`, "", "Posts", "Tags");
-            const isTrue = postPage.checkExpectedTextDisplay(xpathErrorMessage, msgAdded)
-            expect(isTrue).toBeFalsy();
-        })
+            //go to post > tags
+            await postPage.goToPage('Tags');
+            await postPage.addNewTag(`tag ${tagUserName} 30`, specialTagSlug, '');
 
-        await test.step('Step: Fill tag name + slug', async () => {
-            postPage.addTag(`tag ${tagUserName} 03`, specialSlug, "Posts", "Tags");
-            const isTrue = postPage.checkExpectedTextDisplay(xpathErrorMessage, msgAdded)
-            expect(isTrue).toBeTruthy();
+            //check add success
+            const isAddPass = await postPage.checkShowExpectedMessage(msgTagAdded);
+            expect(isAddPass).toBeTruthy();
         })
 
         await test.step('Step: Check special slug is added and display ', async () => {
-            const row = postPage.checkTagNameAndSlug(expectedSlug);
-            expect(row).toBeTruthy();
+            const addedTagRow = await postPage.checkTagNameAndSlug(`tag ${tagUserName} 30`, expectedTagSlug);
+            expect(addedTagRow.count()).toBeGreaterThan(0);
         })
 
         await test.step('Step: Delete tag', async () => {
-            await postPage.deleteTag(`tag ${tagUserName} 03`);
-            const rowVisible = await postPage.checkTagNameAndSlug(expectedSlug)
-            expect(!rowVisible).toBeTruthy();
+            await postPage.deleteAddedTag(`tag ${tagUserName} 30`, expectedTagSlug);
+
+            //check nam and slug not display in table
+            const addedTagRow = await postPage.checkTagNameAndSlug(`tag ${tagUserName} 30`, expectedTagSlug);
+            expect(addedTagRow.count()).toEqual(0);
         })
     })
 
     test('@POST_CATEGORY_001-Category - create category success', async () => {
         await test.step('Step: Add category success', async () => {
             //Go to 'Category' menu
-            await page.locator("//div[contains(text(), 'Posts')]").click();
-            await page.locator("//a[contains(text(), 'Categories')]").click();
+            await postPage.goToPage('Categories');
 
             //Add new tag = $name
-            await page.locator("#tag-name").fill("category Phuoc 03");
-            await page.locator("#tag-slug").fill("Đây là category đặc biệt @1221 $2112");
-            await page.locator("#submit").click();
+            await postPage.addNewTag(`tag ${tagUserName} 30`, specialCateSlug, '')
+
         })
 
         await test.step('Step: Check message category added', async () => {
-            const expectedText = "Category added.";
-            const locatorP = page.locator('//div[@role="alert"]/p');
-            await expect(locatorP).toHaveText(expectedText);
+            const isAddPass = await postPage.checkShowExpectedMessage(msgCateAdded);
+            expect(isAddPass).toBeTruthy();
         })
 
         await test.step('Step: Check slug is added and display ', async () => {
-            await page.locator("#tag-name").fill("category Phuoc 04");
-            await page.locator(".postform").selectOption('k11 class');
-            await page.locator("#submit").click();
+            const addedTagRow = await postPage.checkTagNameAndSlug(`tag ${tagUserName} 30`, expectedCateSlug);
+            expect(addedTagRow.count()).toBeGreaterThan(0);
         })
 
         await test.step('Step: Check message category added', async () => {
-            const expectedText = "Category added.";
-            const locatorP = page.locator('//div[@role="alert"]/p');
-            await expect(locatorP).toHaveText(expectedText);
+            const isAddPass = await postPage.checkShowExpectedMessage(msgCateAdded);
+            expect(isAddPass).toBeTruthy();
         })
 
         await test.step('Step: Check new catetory is added and display ', async () => {
-            const row = page.locator('tr', {
-                has: page.locator('a.row-title', { hasText: 'category Phuoc 04' })
-            });
+            const addedCateRow = await postPage.checkTagNameAndSlug(`tag ${tagUserName} 30`, expectedCateSlug);
+            expect(addedCateRow.count()).toBeGreaterThan(0);
         })
 
         await test.step('Step: Delete category', async () => {
-            const row = page.locator('tr', {
-                has: page.locator('a.row-title', { hasText: 'category Phuoc 04' })
-            });
-            await row.locator('th.check-column input[type="checkbox"]').check();
-            await page.locator('//select[@id ="bulk-action-selector-top"]').click();
-            await page.locator('//select[@id ="bulk-action-selector-top"]').selectOption('delete');
-            await page.locator('#doaction').click();
+            await postPage.deleteAddedTag(`tag ${tagUserName} 30`, expectedCateSlug);
+
+            //check nam and slug not display in table
+            const addedTagRow = await postPage.checkTagNameAndSlug(`tag ${tagUserName} 30`, expectedCateSlug);
+            expect(addedTagRow.count()).toEqual(0);
         })
     })
 })

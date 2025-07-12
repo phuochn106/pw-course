@@ -1,10 +1,8 @@
 import { test, expect } from '@playwright/test';
-import { TodoPage } from '../../pages/todo-page';
+import { TodoPage } from '../../pages/lesson-06/todo';
 
 test('Todo test - add, remove, verify visibility', async ({ page }) => {
     const todoPage = new TodoPage(page);
-    todoPage.xpathInputTask = '//input[@id="new-task"]';
-    todoPage.xpathAddTaskButton = '//button[@id="add-task"]';
 
     await test.step('Step: open material page and go to Todo page', async () => {
         await todoPage.openMaterialPage();
@@ -13,7 +11,7 @@ test('Todo test - add, remove, verify visibility', async ({ page }) => {
 
     await test.step('Step:Add 100 todo items', async () => {
         for (let i = 1; i <= 10; i++) {
-            await todoPage.addTodo(`Todo ${i}`);
+            await todoPage.addTodoItem(`Todo ${i}`);
         }
     });
 

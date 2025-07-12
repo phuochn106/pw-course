@@ -1,31 +1,25 @@
 import { test, expect } from '@playwright/test';
-import { RegisterPage } from '../../pages/register-page';
+import { RegisterPage } from '../../pages/lesson-06/register';
 
 test('Register successfully and check table data', async ({ page }) => {
-    const userName = "phuoc2";
-    const email = "phuoc2@yopmail.com";
+    const userName = "phuoc5";
+    const email = "phuoc5@yopmail.com";
     const registerPage = new RegisterPage(page)
-    registerPage.xpathUsername = "//input[@name='username']";
-    registerPage.xpathEmail = "//input[@name='email']";
-    registerPage.xpathGenderMale = "//input[@value='male']";
-    registerPage.xpathGenderFemale = "//input[@value='female']";
-    registerPage.xpathRegisterButton = "//button[contains(text(),'Register')]";
 
-
-    await test.step('Open material page and go to register page', async () => {
+    await test.step('Open material page -> Register page', async () => {
         await registerPage.openMaterialPage();
         await registerPage.gotoPage('Register Page');
     });
 
-    await test.step('Fill form and submit', async () => {
+    await test.step('Fill and submit register form', async () => {
         await registerPage.fillUserName(userName);
         await registerPage.fillEmail(email);
         await registerPage.checkGender('female');
-        await registerPage.clickRegister();
+        await registerPage.doSubmitFormRegister();
     });
 
     await test.step('Verify registered info in table', async () => {
-        const isDisplayed = await registerPage.isUserInfoDisplayed(userName, email);
+        const isDisplayed = await registerPage.checkRegisterSuccess(userName, email);
         expect(isDisplayed).toBeTruthy();
     });
 });

@@ -1,64 +1,49 @@
-import { test, expect, Page, chromium } from '@playwright/test';
-import { RegisterPage } from '../../pages/register-page';
+import { test, expect, Page, chromium } from '@playwright/test'
+import { LoginPage } from '../../pages/lesson-05/login';
 test.describe('AUTH-Authentication', () => {
     let page: Page;
     let browser;
-    let inputtedUserName = "";
     let userName = "p103-phuoc";
     let wUserName = "p103";
     let password = "$9ICWlOVhHW2nNZUtkLPq)%e";
-    let registerPage: RegisterPage;
-    const adminPageLink = "https://pw-practice-dev.playwrightvn.com/wp-admin/";
-    const xpathUsername = "#user_login";
-    const xpathPassword = "#user_pass";
-    const xpathLoginButton = "#wp-submit";
-    const xpathErrorLabel = "#login_error>p";
-    const xpathDashBoard = '.wrap>h1';
-    const xpathGlance = '(//div[@class="postbox-header"])[1]/h2';
-    const xpathActivity = '(//div[@class="postbox-header"])[2]/h2';
+    const expectedText = `Error: The username ${wUserName} is not registered on this site. If you are unsure of your username, try your email address instead.`;
+    const currentExpectedUrl = 'https://pw-practice-dev.playwrightvn.com/wp-admin/';
 
-    /*
-     xpathUsername: string// = "//input[@name='username']";
-        xpathEmail: string// = "//input[@name='email']";
-        xpathGenderMale: string// = "//input[@value='male']";
-        xpathGenderFemale: string// = "//input[@value='female']";
-        xpathRegisterButton: string// = "//button[contains(text(),'Register')]";
-        // xpathRegisterPage: string = "//a[contains(text(), 'Register Page')]";
-    */
+    let loginPage: LoginPage;
+
 
     test.beforeEach(async ({ }) => {
         browser = await chromium.launch();
         const context = await browser.newContext();
         page = await context.newPage();
-        registerPage = new RegisterPage(page);
-        registerPage.openLoginPage(adminPageLink);
+        loginPage = new LoginPage(page);
+        loginPage.openAdminPage();
     })
 
     test('@AUTH_001-Login fail', async ({ page }) => {
-        await test.step('Step: Login with wrong user name ', async () => {
-            await registerPage.doLogin(wUserName, password);
-            const errorText = await registerPage.checkLoginNotSuccess();
-            const expectedText = `Error: The username ${wUserName} is not registered on this site. If you are unsure of your username, try your email address instead.`;
-            expect(errorText).toBe(expectedText);
-        })
+        await test.step('Step: Login with wrong credentials ', async () => {
+            await loginPage.doLoginToAdminPage(wUserName, password);
 
+            //Kiem tra loi tra ve dung chua
+            const showCorrectError = await loginPage.checkExpectedMessage(expectedText);
+            expect(showCorrectError).toBeTruthy;
+        })
     })
 
     test('@AUTH_002-Login success', async ({ page }) => {
         await test.step('Step: Login with correct UN, PWD', async () => {
-            await registerPage.doLogin(userName, password);
+            await loginPage.doLoginToAdminPage(userName, password);
         })
 
         await test.step('Step: check to correct redirect URL', async () => {
-            const isTrue = await registerPage.checkRedirectLink(registerPage.redirectLink);
-            expect(isTrue).toBeTruthy();
+            const currentUrl = await loginPage.getCurrentUrl();
+            expect(currentUrl).toEqual(currentExpectedUrl);
         })
 
         await test.step('Step: Check text Dashboard, At a Grance,Activity are displayed', async () => {
-
-            const iStxtDashBoard = await registerPage.checkExpectedTextDisplay(xpathDashBoard, 'Dash Board');
-            const iStxtGlance = await registerPage.checkExpectedTextDisplay(xpathGlance, 'At a Glance');
-            const iStxtActivity = await registerPage.checkExpectedTextDisplay(xpathActivity, 'Activity');
+            const iStxtDashBoard = await loginPage.checkHeadingDisplay(loginPage.xpathDashBoard);
+            const iStxtGlance = await loginPage.checkHeadingDisplay(loginPage.xpathGlance);
+            const iStxtActivity = await await loginPage.checkHeadingDisplay(loginPage.xpathActivity);
             expect(iStxtDashBoard && iStxtGlance && iStxtActivity).toBeTruthy();
         });
     })

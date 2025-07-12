@@ -1,15 +1,8 @@
 import { test, expect } from '@playwright/test';
-import { } from '../../pages/01-pom';
-import { PersonalNotePage } from '../../pages/personal-note';
+import { PersonalNotePage } from '../../pages/lesson-06/personal-note';
 
 test('Personal Notes - Add, Search, Verify Results', async ({ page }) => {
     const notePage = new PersonalNotePage(page);
-    notePage.xpathNotePage = "//a[contains(text(),'Personal notes')]";
-    notePage.inputTitle = page.locator('//input[@id="note-title"]');
-    notePage.inputBody = page.locator('//textarea[@id="note-content"]');
-    notePage.btnAdd = page.locator('//button[@id="add-note"]');
-    notePage.inputSearch = page.locator('//input[@id="search"])');
-    notePage.listNotes = page.locator('//ul[@id="notes-list"]');
 
     await test.step('Open Personal Notes page', async () => {
         await notePage.openMaterialPage();
