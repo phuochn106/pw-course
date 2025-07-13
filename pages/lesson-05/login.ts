@@ -12,8 +12,8 @@ export class LoginPage extends AdminBasePage {
         super(page);
     }
 
-    async doLoginToAdminPage(userName: string, password: string): Promise<DashboardPage> {
-        await this.openAdminPage();
+    async doLoginToAdminPage(env: string, userName: string, password: string): Promise<DashboardPage> {
+        await this.openAdminPage(env);
         await this.page.locator(this.xpathUsername).fill(userName);
         await this.page.locator(this.xpathPassword).fill(password);
         await this.page.locator(this.xpathLoginButton).click();

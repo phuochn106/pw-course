@@ -16,6 +16,7 @@ test.describe('POST-post', () => {
     const existingTag = "lesson tag";
     const tagUserName = "Phuoc2025";
     const tagSlug = "2025";
+    const cateParent = 'k11 class';
     const msgTagAdded = "Tag added.";
     const msgCateAdded = "Category added.";
     const specialTagSlug = "Đây là tag đặc biệt @1221 $2112";
@@ -25,6 +26,7 @@ test.describe('POST-post', () => {
     let postPage: PostPage;
     let loginPage: LoginPage;
     let dashboardPage: DashboardPage;
+    const env = 'dev';
 
 
     test.beforeEach(async ({ }) => {
@@ -32,7 +34,7 @@ test.describe('POST-post', () => {
         const context = await browser.newContext();
         page = await context.newPage();
         loginPage = new LoginPage(page);
-        dashboardPage = await loginPage.doLoginToAdminPage(userName, password);
+        dashboardPage = await loginPage.doLoginToAdminPage(env, userName, password);
         postPage = await dashboardPage.navigateToPost();
     })
 
@@ -43,7 +45,7 @@ test.describe('POST-post', () => {
     test('@POST_TAG_001-Tag - add tag failed', async () => {
         await test.step('Step: Check validation ', async () => {
             //go to post > tags
-            await postPage.goToPage('Tags');
+            await postPage.goToPage('Posts', 'Tags');
             await postPage.addNewTag('', '', '');
             const isAddFail = await postPage.checkShowExpectedMessage(expectRequireText);
             expect(isAddFail).toBeTruthy();
@@ -59,7 +61,7 @@ test.describe('POST-post', () => {
     test('@POST_TAG_002 - Tag - add tag success', async () => {
         await test.step('Step: Input tag name and check success', async () => {
             //go to post > tags
-            await postPage.goToPage('Tags');
+            await postPage.goToPage('Posts', 'Tags');
             await postPage.addNewTag(existingTag, '', '');
             const isAddFail = await postPage.checkShowExpectedMessage(expectRequireText);
             expect(isAddFail).toBeTruthy();
@@ -91,7 +93,7 @@ test.describe('POST-post', () => {
     test('@POST_TAG_003 - Tag - add tag with special character', async () => {
         await test.step('Step: Input data tag name = $name', async () => {
             //go to post > tags
-            await postPage.goToPage('Tags');
+            await postPage.goToPage('Posts', 'Tags');
             await postPage.addNewTag(`tag ${tagUserName} 30`, specialTagSlug, '');
 
             //check add success
@@ -116,10 +118,10 @@ test.describe('POST-post', () => {
     test('@POST_CATEGORY_001-Category - create category success', async () => {
         await test.step('Step: Add category success', async () => {
             //Go to 'Category' menu
-            await postPage.goToPage('Categories');
+            await postPage.goToPage('Posts', 'Categories');
 
             //Add new tag = $name
-            await postPage.addNewTag(`tag ${tagUserName} 30`, specialCateSlug, '')
+            await postPage.addNewTag(`tag ${tagUserName} 30`, specialCateSlug, cateParent)
 
         })
 

@@ -12,16 +12,17 @@ test.describe('MEDIA-Media', () => {
     const urlFile = 'tests/phuoc.txt';
     const fileName = 'phuoc.txt';
     const haveUrl = 'https://pw-practice-dev.playwrightvn.com/wp-admin/upload.php';
+    const env = 'dev';
 
     test('@MEDIA_FILES_001-Media - upload file success', async ({ page }) => {
         await test.step('Step:Login', async () => {
             loginPage = new LoginPage(page);
-            dashboardPage = await loginPage.doLoginToAdminPage(userName, password);
+            dashboardPage = await loginPage.doLoginToAdminPage(env, userName, password);
             mediaPage = await dashboardPage.navigateToMedia()
         })
 
         await test.step('Step: upload file', async () => {
-            loginPage.goToPage('Library');
+            loginPage.goToPage('Media', 'Library');
 
             //Check upload file
             await mediaPage.uploadMediaFile(urlFile);

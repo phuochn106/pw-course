@@ -12,6 +12,20 @@ export class Article extends UtilPage {
         super(request);
     }
 
+    async addArticleWithOtherInfo(token: string, article: {}) {
+        this.apiEndpoint = "api/articles/";
+        this.requestURL = await this.generateLink(this.apiEndpoint);
+        const responseData = this.request.post(this.requestURL, {
+            headers: {
+                Authorization: token
+            },
+            data: {
+                article
+            }
+        })
+        return responseData;
+    }
+
     async addNewArticle(token: string) {
         this.apiEndpoint = "api/articles/";
         this.requestURL = await this.generateLink(this.apiEndpoint);

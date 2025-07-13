@@ -15,12 +15,12 @@ export class DashboardPage extends AdminBasePage {
 
     // Navigation methods that return specific page objects
     async navigateToPost(): Promise<PostPage> {
-        await this.goToPage('Tags');
+        await this.goToPage('Posts', 'Tags');
         return new PostPage(this.page);
     }
 
     async navigateToMedia(): Promise<MediaPage> {
-        await this.goToPage('Library');
+        await this.goToPage('Media', 'Library');
         return new MediaPage(this.page);
     }
 
