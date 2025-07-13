@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { RegisterPage } from '../../pages/lesson-06/register';
-import { PomManager } from '../students-submission/phuoc/lesson-08:/pages/POM-manager';
+import { PomManager } from '../lesson-8/POM-manager';
 
 test('Register successfully and check table data', async ({ page }) => {
     const userName = "phuoc5";

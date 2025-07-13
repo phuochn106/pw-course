@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { TodoPage } from '../../pages/lesson-06/todo';
-import { PomManager } from '../students-submission/phuoc/lesson-08:/pages/POM-manager';
+import { PomManager } from '../lesson-8/POM-manager';
 
 test('Todo test - add, remove, verify visibility', async ({ page }) => {
     const pomManager = new PomManager(page);

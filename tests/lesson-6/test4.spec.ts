@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { PersonalNotePage } from '../../pages/lesson-06/personal-note';
-import { PomManager } from '../students-submission/phuoc/lesson-08:/pages/POM-manager';
+import { PomManager } from '../lesson-8/POM-manager';
 
 test('Personal Notes - Add, Search, Verify Results', async ({ page }) => {
     const pomManager = new PomManager(page);

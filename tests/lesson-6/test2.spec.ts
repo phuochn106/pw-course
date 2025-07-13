@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { ProductPage } from '../../pages/lesson-06/product';
-import { PomManager } from '../students-submission/phuoc/lesson-08:/pages/POM-manager';
+import { PomManager } from '../lesson-8/POM-manager';
 
 test('Add product - Check qty and Total price', async ({ page }) => {
     const pomManager = new PomManager(page);
